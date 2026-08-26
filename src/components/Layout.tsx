@@ -32,6 +32,22 @@ const Container = styled.div`
     );
 `;
 
+const Overlay = styled.div<{ $isExpanded: boolean }>`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 40;
+    opacity: ${({ $isExpanded }) => ($isExpanded ? 1 : 0)};
+    pointer-events: ${({ $isExpanded }) => ($isExpanded ? "auto" : "none")};
+    transition: opacity 0.3s ease;
+  }
+`;
+
 const Sidebar = styled.aside<{ $isExpanded: boolean }>`
   width: ${({ $isExpanded }) => ($isExpanded ? "280px" : "96px")};
   background: rgba(32, 32, 36, 0.4);
@@ -40,9 +56,21 @@ const Sidebar = styled.aside<{ $isExpanded: boolean }>`
   border-right: 1px solid rgba(242, 242, 242, 0.08);
   display: flex;
   flex-direction: column;
-  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
-  z-index: 10;
+  z-index: 50;
+
+  @media (max-width: 768px) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100dvh;
+    width: 280px;
+    background: rgba(32, 32, 36, 0.95);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: ${({ $isExpanded }) =>
+      $isExpanded ? "translateX(0)" : "translateX(-100%)"};
+  }
 `;
 
 const SidebarHeader = styled.div<{ $isExpanded: boolean }>`
@@ -214,32 +242,90 @@ const Main = styled.main`
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   overflow-y: hidden;
   overflow-x: hidden;
 `;
 
+const MobileHeader = styled.header`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background-color: rgba(32, 32, 36, 0.4);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(242, 242, 242, 0.08);
+    flex-shrink: 0;
+    height: 80px;
+  }
+`;
+
+const MobileTitle = styled.h1`
+  font-size: 1.4rem;
+  color: #f2f2f2;
+  font-weight: 600;
+`;
+
 export const Layout = () => {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const sidebarRef = useRef<HTMLElement>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (sidebarRef.current) {
-      gsap.fromTo(
-        sidebarRef.current,
-        { x: -300, opacity: 0 },
-        { x: 0, opacity: 1, duration: 0.8, ease: "power3.out" },
-      );
-    }
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        setIsExpanded(false);
+      } else {
+        setIsExpanded(true);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    if (sidebarRef.current) {
+      if (!isMobile) {
+        gsap.fromTo(
+          sidebarRef.current,
+          { x: -300, opacity: 0 },
+          {
+            x: 0,
+            opacity: 1,
+            duration: 0.8,
+            ease: "power3.out",
+            clearProps: "transform,opacity",
+          },
+        );
+      } else {
+        gsap.set(sidebarRef.current, { clearProps: "all" });
+      }
+    }
+  }, [isMobile]);
 
   const handleLogout = () => {
     navigate("/login");
   };
 
+  const handleNavClick = () => {
+    if (isMobile) {
+      setIsExpanded(false);
+    }
+  };
+
   return (
     <Container>
+      <Overlay $isExpanded={isExpanded} onClick={() => setIsExpanded(false)} />
+
       <Sidebar ref={sidebarRef} $isExpanded={isExpanded}>
         <SidebarHeader $isExpanded={isExpanded}>
           <Title $isExpanded={isExpanded}>
@@ -261,37 +347,66 @@ export const Layout = () => {
         </UserProfile>
 
         <NavList>
-          <StyledNavLink to="/dashboard" end $isExpanded={isExpanded}>
+          <StyledNavLink
+            to="/dashboard"
+            end
+            $isExpanded={isExpanded}
+            onClick={handleNavClick}
+          >
             <FiHome size={22} style={{ flexShrink: 0 }} />
             <NavText $isExpanded={isExpanded}>Dashboard</NavText>
           </StyledNavLink>
 
-          <StyledNavLink to="/dashboard/maquinas" $isExpanded={isExpanded}>
+          <StyledNavLink
+            to="/dashboard/maquinas"
+            $isExpanded={isExpanded}
+            onClick={handleNavClick}
+          >
             <FiServer size={22} style={{ flexShrink: 0 }} />
             <NavText $isExpanded={isExpanded}>Máquinas</NavText>
           </StyledNavLink>
 
-          <StyledNavLink to="/dashboard/checklist" $isExpanded={isExpanded}>
+          <StyledNavLink
+            to="/dashboard/checklist"
+            $isExpanded={isExpanded}
+            onClick={handleNavClick}
+          >
             <FiCheckSquare size={22} style={{ flexShrink: 0 }} />
             <NavText $isExpanded={isExpanded}>Checklist</NavText>
           </StyledNavLink>
 
-          <StyledNavLink to="/dashboard/historico" $isExpanded={isExpanded}>
+          <StyledNavLink
+            to="/dashboard/historico"
+            $isExpanded={isExpanded}
+            onClick={handleNavClick}
+          >
             <FiClock size={22} style={{ flexShrink: 0 }} />
             <NavText $isExpanded={isExpanded}>Histórico</NavText>
           </StyledNavLink>
 
-          <StyledNavLink to="/dashboard/relatorios" $isExpanded={isExpanded}>
+          <StyledNavLink
+            to="/dashboard/relatorios"
+            $isExpanded={isExpanded}
+            onClick={handleNavClick}
+          >
             <FiFileText size={22} style={{ flexShrink: 0 }} />
             <NavText $isExpanded={isExpanded}>Relatórios</NavText>
           </StyledNavLink>
 
-          <StyledNavLink to="/dashboard/cadastros" $isExpanded={isExpanded}>
+          <StyledNavLink
+            to="/dashboard/cadastros"
+            $isExpanded={isExpanded}
+            onClick={handleNavClick}
+          >
             <FiDatabase size={22} style={{ flexShrink: 0 }} />
             <NavText $isExpanded={isExpanded}>Cadastros</NavText>
           </StyledNavLink>
 
-          <StyledNavLink to="/dashboard/profissional" $isExpanded={isExpanded}>
+          <StyledNavLink
+            to="/dashboard/profissional"
+            $isExpanded={isExpanded}
+            onClick={handleNavClick}
+          >
             <FiBriefcase size={22} style={{ flexShrink: 0 }} />
             <NavText $isExpanded={isExpanded}>Área Profissional</NavText>
           </StyledNavLink>
@@ -304,6 +419,14 @@ export const Layout = () => {
       </Sidebar>
 
       <Main>
+        <MobileHeader>
+          <MobileTitle>
+            <strong style={{ color: "#d9652b" }}>M</strong>Predict
+          </MobileTitle>
+          <MenuButton onClick={() => setIsExpanded(true)}>
+            <PiSidebarBold size={24} />
+          </MenuButton>
+        </MobileHeader>
         <Outlet />
       </Main>
     </Container>
