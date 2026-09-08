@@ -12,11 +12,17 @@ import {
 } from "react-icons/fi";
 
 const ViewportWrapper = styled.div`
-  height: calc(100dvh - 80px);
-  width: 100%;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column;
+  gap: 32px;
+
+  width: 95dvw;
+
+  height: 100dvh;
+  max-height: 100dvh;
+
+  margin: 0 auto;
+  padding: 48px;
   overflow: hidden;
 `;
 

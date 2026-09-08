@@ -13,11 +13,17 @@ import {
 } from "react-icons/fi";
 
 const ViewportWrapper = styled.div`
-  height: calc(100dvh - 80px);
-  width: 100%;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column;
+  gap: 32px;
+
+  width: 95dvw;
+
+  height: 100dvh;
+  max-height: 100dvh;
+
+  margin: 0 auto;
+  padding: 48px;
   overflow: hidden;
 `;
 
@@ -71,18 +77,25 @@ const GlassForm = styled.form`
   overflow-y: auto;
 
   &::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
   }
+
   &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background-color: rgba(242, 242, 242, 0.1);
+    background: rgba(32, 32, 36, 0.4);
     border-radius: 10px;
   }
-  &::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(242, 242, 242, 0.2);
+
+  &::-webkit-scrollbar-thumb {
+    background: #d9652b;
+    border-radius: 10px;
   }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #bf5824;
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: #d9652b #0b0b0d;
 `;
 
 const FormSection = styled.div`

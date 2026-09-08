@@ -3,7 +3,6 @@ import styled from "styled-components";
 import gsap from "gsap";
 import {
   FiThermometer,
-  FiDroplet,
   FiActivity,
   FiCheckSquare,
   FiClock,
@@ -19,7 +18,6 @@ const Container = styled.div`
   flex-direction: column;
   gap: 32px;
   width: 100%;
-
   height: 100dvh;
   max-height: 100dvh;
 `;
@@ -221,15 +219,12 @@ const SpecValue = styled.span`
   font-weight: 500;
 `;
 
-// --- Dados Mockados ---
-
 const mockMachines = [
   {
     id: "m1",
-    name: "Torno Mecânico #01",
+    name: "Torno Mecânico",
     status: "Em Operação",
     temperature: { current: 48, max: 80, peakTime: "14:32 (Pico de 65°C)" },
-    lubrication: { level: 85, alert: false },
     vibration: { level: 2.4, limit: 5.0, peakTime: "10:15 (Pico 4.1 mm/s)" },
     specs: [
       { label: "RPM", value: "Até 2500" },
@@ -241,10 +236,22 @@ const mockMachines = [
   },
   {
     id: "m2",
-    name: "Fresadora CNC #02",
+    name: "Furadeira Fresadora",
+    status: "Em Operação",
+    temperature: { current: 55, max: 85, peakTime: "09:20 (Pico de 60°C)" },
+    vibration: { level: 1.8, limit: 4.0, peakTime: "09:25 (Pico 2.5 mm/s)" },
+    specs: [
+      { label: "Capacidade de Furação", value: "40 mm" },
+      { label: "Capacidade de Fresamento", value: "32 mm" },
+      { label: "Curso do Eixo Árvore", value: "120 mm" },
+      { label: "Cone do Eixo", value: "ISO 30" },
+    ],
+  },
+  {
+    id: "m3",
+    name: "Fresadora Ferramenteira",
     status: "Em Alerta",
     temperature: { current: 76, max: 80, peakTime: "Agora (Pico de 76°C)" },
-    lubrication: { level: 15, alert: true },
     vibration: { level: 4.8, limit: 5.0, peakTime: "Há 5 min (Pico 4.9 mm/s)" },
     specs: [
       { label: "Velocidade do Spindle", value: "8000 RPM" },
@@ -254,8 +261,6 @@ const mockMachines = [
     ],
   },
 ];
-
-// --- Componente Principal ---
 
 export const Maquinas = () => {
   const [activeTab, setActiveTab] = useState(mockMachines[0].id);
@@ -276,8 +281,6 @@ export const Maquinas = () => {
 
   const getTempColor = (temp: number) =>
     temp > 70 ? "#E53935" : temp > 50 ? "#D9652B" : "#4CAF50";
-  const getLubColor = (level: number) =>
-    level < 20 ? "#E53935" : level < 50 ? "#D9652B" : "#2196F3";
 
   return (
     <Container>
@@ -320,7 +323,6 @@ export const Maquinas = () => {
         </QuickActions>
 
         <Grid>
-          {/* Card Temperatura */}
           <GlassCard>
             <CardHeader>
               <IconBox $color="#E53935" $bg="rgba(229, 57, 53, 0.1)">
@@ -355,40 +357,6 @@ export const Maquinas = () => {
             </TimelineNote>
           </GlassCard>
 
-          {/* Card Lubrificação */}
-          <GlassCard>
-            <CardHeader>
-              <IconBox $color="#2196F3" $bg="rgba(33, 150, 243, 0.1)">
-                <FiDroplet />
-              </IconBox>
-              <IndicatorTitle>Lubrificação</IndicatorTitle>
-            </CardHeader>
-
-            <ValueDisplay>
-              <MainValue
-                $color={getLubColor(selectedMachine.lubrication.level)}
-              >
-                {selectedMachine.lubrication.level}
-              </MainValue>
-              <Unit>% de Fluido</Unit>
-            </ValueDisplay>
-
-            <ProgressBarContainer>
-              <ProgressBarFill
-                $progress={selectedMachine.lubrication.level}
-                $color={getLubColor(selectedMachine.lubrication.level)}
-              />
-            </ProgressBarContainer>
-
-            {selectedMachine.lubrication.alert && (
-              <TimelineNote style={{ borderLeftColor: "#E53935" }}>
-                <FiAlertCircle size={16} color="#E53935" />
-                Alerta visual de substituição de fluido ativado!
-              </TimelineNote>
-            )}
-          </GlassCard>
-
-          {/* Card Vibração */}
           <GlassCard>
             <CardHeader>
               <IconBox $color="#D9652B" $bg="rgba(217, 101, 43, 0.1)">
@@ -419,7 +387,6 @@ export const Maquinas = () => {
             </TimelineNote>
           </GlassCard>
 
-          {/* Card Especificações Técnicas (Limitações) */}
           <GlassCard>
             <CardHeader>
               <IconBox $color="#A8A8B3" $bg="rgba(168, 168, 179, 0.1)">
