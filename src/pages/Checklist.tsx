@@ -9,7 +9,7 @@ import {
   FiTrash2,
   FiAlertCircle,
   FiChevronDown,
-  FiType,
+  FiMessageSquare,
 } from "react-icons/fi";
 
 const Container = styled.div`
@@ -231,6 +231,41 @@ const CheckboxText = styled.span<{ checked: boolean }>`
   transition: color 0.2s ease;
 `;
 
+const ObservationInput = styled.textarea`
+  width: 100%;
+  min-height: 120px;
+  background-color: rgba(18, 18, 20, 0.6);
+  border: 1px solid rgba(242, 242, 242, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  color: #f2f2f2;
+  font-size: 1rem;
+  resize: vertical;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  outline: none;
+
+  &:focus {
+    border-color: #d9652b;
+    background-color: rgba(18, 18, 20, 0.8);
+  }
+
+  &::placeholder {
+    color: rgba(168, 168, 179, 0.5);
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(217, 101, 43, 0.5);
+    border-radius: 10px;
+  }
+`;
+
 const SignatureContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -241,33 +276,6 @@ const SignatureHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-`;
-
-const SignatureOptions = styled.div`
-  display: flex;
-  background-color: rgba(18, 18, 20, 0.6);
-  border-radius: 8px;
-  padding: 4px;
-  gap: 4px;
-`;
-
-const OptionButton = styled.button<{ $active: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background-color: ${({ $active }) =>
-    $active ? "rgba(217, 101, 43, 0.2)" : "transparent"};
-  color: ${({ $active }) => ($active ? "#D9652B" : "#A8A8B3")};
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    color: ${({ $active }) => ($active ? "#D9652B" : "#F2F2F2")};
-  }
 `;
 
 const ClearButton = styled.button`
@@ -306,24 +314,6 @@ const StyledCanvas = styled.canvas`
   height: 100%;
   display: block;
   cursor: crosshair;
-`;
-
-const TypedSignatureInput = styled.input`
-  width: 100%;
-  height: 100%;
-  background: transparent;
-  border: none;
-  color: #d9652b;
-  font-size: 3rem;
-  font-family: "Brush Script MT", "Caveat", "Dancing Script", cursive;
-  text-align: center;
-  outline: none;
-  padding: 24px;
-
-  &::placeholder {
-    color: rgba(168, 168, 179, 0.3);
-    font-family: inherit;
-  }
 `;
 
 const SubmitButton = styled.button`
@@ -365,9 +355,9 @@ const checklistItems = [
 ];
 
 const maquinasDisponiveis = [
-  "Torno Mecânico #01",
-  "Fresadora CNC #02",
-  "Furadeira #03",
+  "Torno Mecânico",
+  "Furadeira Fresadora",
+  "Fresadora Ferramenteira",
 ];
 
 export const Checklist = () => {
@@ -375,10 +365,9 @@ export const Checklist = () => {
   const [selectedMachine, setSelectedMachine] = useState("");
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
+  const [observation, setObservation] = useState("");
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
-  const [signatureMode, setSignatureMode] = useState<"draw" | "type">("draw");
-  const [typedSignature, setTypedSignature] = useState("");
 
   const containerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -404,26 +393,22 @@ export const Checklist = () => {
         "-=0.2",
       );
     }
-  }, []);
 
-  useEffect(() => {
-    if (signatureMode === "draw") {
-      const canvas = canvasRef.current;
-      if (canvas) {
-        const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width * 2;
-        canvas.height = rect.height * 2;
-        const context = canvas.getContext("2d");
-        if (context) {
-          context.scale(2, 2);
-          context.lineCap = "round";
-          context.strokeStyle = "#D9652B";
-          context.lineWidth = 3;
-          contextRef.current = context;
-        }
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * 2;
+      canvas.height = rect.height * 2;
+      const context = canvas.getContext("2d");
+      if (context) {
+        context.scale(2, 2);
+        context.lineCap = "round";
+        context.strokeStyle = "#D9652B";
+        context.lineWidth = 3;
+        contextRef.current = context;
       }
     }
-  }, [signatureMode]);
+  }, []);
 
   const handleCheckboxChange = (id: string) => {
     setCheckedItems((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -485,7 +470,6 @@ export const Checklist = () => {
       context.clearRect(0, 0, canvas.width, canvas.height);
       setHasSignature(false);
     }
-    setTypedSignature("");
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -498,9 +482,6 @@ export const Checklist = () => {
   };
 
   const allChecked = checklistItems.every((item) => checkedItems[item.id]);
-
-  const isSignatureValid =
-    signatureMode === "draw" ? hasSignature : typedSignature.trim().length > 0;
 
   return (
     <Container ref={containerRef}>
@@ -579,6 +560,17 @@ export const Checklist = () => {
           </ChecklistGrid>
         </FormGroup>
 
+        <FormGroup>
+          <Label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <FiMessageSquare /> Observações
+          </Label>
+          <ObservationInput
+            placeholder="Adicione observações ou anomalias encontradas no equipamento..."
+            value={observation}
+            onChange={(e) => setObservation(e.target.value)}
+          />
+        </FormGroup>
+
         <SignatureContainer>
           <SignatureHeader>
             <Label
@@ -586,78 +578,51 @@ export const Checklist = () => {
             >
               <FiPenTool /> Assinatura Digital do Técnico
             </Label>
-            <SignatureOptions>
-              <OptionButton
-                type="button"
-                $active={signatureMode === "draw"}
-                onClick={() => setSignatureMode("draw")}
-              >
-                <FiPenTool /> Desenhar
-              </OptionButton>
-              <OptionButton
-                type="button"
-                $active={signatureMode === "type"}
-                onClick={() => setSignatureMode("type")}
-              >
-                <FiType /> Digitar
-              </OptionButton>
-            </SignatureOptions>
             <ClearButton type="button" onClick={clearSignature}>
               <FiTrash2 /> Limpar
             </ClearButton>
           </SignatureHeader>
 
           <InputWrapper>
-            {signatureMode === "draw" ? (
-              <>
-                <StyledCanvas
-                  ref={canvasRef}
-                  onMouseDown={startDrawing}
-                  onMouseMove={draw}
-                  onMouseUp={stopDrawing}
-                  onMouseOut={stopDrawing}
-                  onTouchStart={startDrawing}
-                  onTouchMove={draw}
-                  onTouchEnd={stopDrawing}
-                />
-                {!hasSignature && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      transform: "translate(-50%, -50%)",
-                      color: "rgba(168, 168, 179, 0.4)",
-                      pointerEvents: "none",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      fontSize: "1.1rem",
-                    }}
-                  >
-                    <FiPenTool /> Assine aqui
-                  </div>
-                )}
-              </>
-            ) : (
-              <TypedSignatureInput
-                type="text"
-                placeholder="Digite seu nome completo..."
-                value={typedSignature}
-                onChange={(e) => setTypedSignature(e.target.value)}
-              />
+            <StyledCanvas
+              ref={canvasRef}
+              onMouseDown={startDrawing}
+              onMouseMove={draw}
+              onMouseUp={stopDrawing}
+              onMouseOut={stopDrawing}
+              onTouchStart={startDrawing}
+              onTouchMove={draw}
+              onTouchEnd={stopDrawing}
+            />
+            {!hasSignature && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  color: "rgba(168, 168, 179, 0.4)",
+                  pointerEvents: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  fontSize: "1.1rem",
+                }}
+              >
+                <FiPenTool /> Assine aqui
+              </div>
             )}
           </InputWrapper>
         </SignatureContainer>
 
         <SubmitButton
           type="submit"
-          disabled={!selectedMachine || !allChecked || !isSignatureValid}
+          disabled={!selectedMachine || !allChecked || !hasSignature}
         >
           {isOffline ? <FiSave size={22} /> : <FiCheck size={22} />}
           {isOffline ? "Salvar Localmente (Offline)" : "Concluir e Enviar"}
         </SubmitButton>
-        {(!allChecked || !isSignatureValid || !selectedMachine) && (
+        {(!allChecked || !hasSignature || !selectedMachine) && (
           <p
             style={{
               color: "#E53935",

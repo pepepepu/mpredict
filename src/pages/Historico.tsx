@@ -256,7 +256,7 @@ const ObservationsBox = styled.div`
 const mockHistoryData = [
   {
     id: "h1",
-    machine: "Torno Mecânico #01",
+    machine: "Torno Mecânico",
     date: "24/08/2026",
     time: "14:30",
     replacedParts:
@@ -268,7 +268,7 @@ const mockHistoryData = [
   },
   {
     id: "h2",
-    machine: "Fresadora CNC #02",
+    machine: "Furadeira Fresadora",
     date: "20/08/2026",
     time: "09:15",
     replacedParts: "Correia de transmissão, Filtro de ar",
@@ -279,7 +279,7 @@ const mockHistoryData = [
   },
   {
     id: "h3",
-    machine: "Torno Mecânico #01",
+    machine: "Fresadora Ferramenteira",
     date: "15/08/2026",
     time: "16:45",
     replacedParts: "Nenhuma peça substituída",
@@ -287,17 +287,6 @@ const mockHistoryData = [
     technicianId: "TEC-3011",
     observations:
       "Limpeza completa do barramento e reaperto geral do painel elétrico. Ruídos atípicos cessaram após a manutenção.",
-  },
-  {
-    id: "h4",
-    machine: "Furadeira #03",
-    date: "10/08/2026",
-    time: "11:20",
-    replacedParts: "Botão de parada de emergência, Fiação interna",
-    technicianName: "Carlos Almeida",
-    technicianId: "TEC-1042",
-    observations:
-      "O botão de emergência apresentava falha de contato esporádica. Substituição completa do módulo elétrico.",
   },
 ];
 
@@ -308,9 +297,9 @@ export const Historico = () => {
 
   const machines = [
     "Todas as Máquinas",
-    "Torno Mecânico #01",
-    "Fresadora CNC #02",
-    "Furadeira #03",
+    "Torno Mecânico",
+    "Furadeira Fresadora",
+    "Fresadora Ferramenteira",
   ];
 
   const filteredHistory =

@@ -155,6 +155,7 @@ const MainValue = styled.span<{ $color?: string }>`
   font-size: 2.5rem;
   font-weight: 600;
   color: ${({ $color }) => $color || "#f2f2f2"};
+  transition: color 0.3s ease;
 `;
 
 const Unit = styled.span`
@@ -175,7 +176,9 @@ const ProgressBarFill = styled.div<{ $progress: number; $color: string }>`
   height: 100%;
   background-color: ${({ $color }) => $color};
   border-radius: 4px;
-  transition: width 1s ease-out;
+  transition:
+    width 1s ease-in-out,
+    background-color 0.3s ease;
 `;
 
 const TimelineNote = styled.div`
@@ -219,7 +222,7 @@ const SpecValue = styled.span`
   font-weight: 500;
 `;
 
-const mockMachines = [
+const initialMachines = [
   {
     id: "m1",
     name: "Torno Mecânico",
@@ -263,11 +266,40 @@ const mockMachines = [
 ];
 
 export const Maquinas = () => {
-  const [activeTab, setActiveTab] = useState(mockMachines[0].id);
+  const [machinesData, setMachinesData] = useState(initialMachines);
+  const [activeTab, setActiveTab] = useState(machinesData[0].id);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setMachinesData((prevMachines) =>
+        prevMachines.map((machine) => {
+          let newTemp = machine.temperature.current + (Math.random() * 4 - 2);
+          newTemp = Math.max(30, Math.min(85, newTemp));
+
+          let newVib = machine.vibration.level + (Math.random() * 0.6 - 0.3);
+          newVib = Math.max(0.5, Math.min(5.5, newVib));
+
+          return {
+            ...machine,
+            temperature: {
+              ...machine.temperature,
+              current: Math.round(newTemp),
+            },
+            vibration: {
+              ...machine.vibration,
+              level: parseFloat(newVib.toFixed(1)),
+            },
+          };
+        }),
+      );
+    }, 2500);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   const selectedMachine =
-    mockMachines.find((m) => m.id === activeTab) || mockMachines[0];
+    machinesData.find((m) => m.id === activeTab) || machinesData[0];
 
   useEffect(() => {
     if (contentRef.current) {
@@ -292,7 +324,7 @@ export const Maquinas = () => {
       </HeaderContainer>
 
       <TabsContainer>
-        {mockMachines.map((machine) => (
+        {machinesData.map((machine) => (
           <TabButton
             key={machine.id}
             $active={activeTab === machine.id}
